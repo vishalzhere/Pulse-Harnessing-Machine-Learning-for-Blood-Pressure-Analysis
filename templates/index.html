@@ -1,1 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PULSE — Blood Pressure Analysis</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+</head>
+<body>
 
+<svg class="ecg-bg" viewBox="0 0 1440 120" preserveAspectRatio="none">
+  <polyline class="ecg-line" points="
+    0,60 80,60 100,60 110,20 120,100 130,60 150,60
+    230,60 250,60 260,20 270,100 280,60 300,60
+    380,60 400,60 410,20 420,100 430,60 450,60
+    530,60 550,60 560,20 570,100 580,60 600,60
+    680,60 700,60 710,20 720,100 730,60 750,60
+    830,60 850,60 860,20 870,100 880,60 900,60
+    980,60 1000,60 1010,20 1020,100 1030,60 1050,60
+    1130,60 1150,60 1160,20 1170,100 1180,60 1200,60
+    1280,60 1300,60 1310,20 1320,100 1330,60 1440,60"/>
+</svg>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-pulse">PULSE</span>
+      <span class="logo-tag">Blood Pressure Analysis System</span>
+    </div>
+    <div class="header-badge"><span class="dot"></span>ML-Powered · Decision Support Only</div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-text">
+    <h1>Know Your <em>Numbers.</em><br>Understand Your <em>Risk.</em></h1>
+    <p>Enter your clinical data below for an instant hypertension stage classification using machine learning and ACC/AHA guidelines.</p>
+  </div>
+</section>
+
+<main>
+  <div class="layout">
+
+    <!-- ── INPUT FORM ── -->
+    <div class="panel form-panel">
+      <div class="panel-label">Patient Data Input</div>
+      <form id="bp-form" novalidate>
+
+        <!-- Blood Pressure Ranges -->
+        <div class="form-group highlight-group">
+          <label>Blood Pressure Ranges</label>
+          <div class="bp-row">
+            <div class="select-wrap">
+              <select id="systolic">
+                <option value="< 120">&lt; 120 mmHg</option>
+                <option value="120-129">120–129 mmHg</option>
+                <option value="130-139">130–139 mmHg</option>
+                <option value="140-159" selected>140–159 mmHg</option>
+                <option value="160-179">160–179 mmHg</option>
+                <option value="180+">180+ mmHg</option>
+              </select>
+              <span class="select-label">Systolic</span>
+            </div>
+            <div class="bp-slash">/</div>
+            <div class="select-wrap">
+              <select id="diastolic">
+                <option value="< 80">&lt; 80 mmHg</option>
+                <option value="80-89">80–89 mmHg</option>
+                <option value="90-99" selected>90–99 mmHg</option>
+                <option value="100-109">100–109 mmHg</option>
+                <option value="110+">110+ mmHg</option>
+              </select>
+              <span class="select-label">Diastolic</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Demographics -->
+        <div class="section-divider">Demographic Information</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="gender">Gender</label>
+            <select id="gender">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="age_group">Age Group</label>
+            <select id="age_group">
+              <option value="18-34">18–34 years</option>
+              <option value="35-50">35–50 years</option>
+              <option value="51-64" selected>51–64 years</option>
+              <option value="65+">65+ years</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Medical History -->
+        <div class="section-divider">Medical History</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="patient_status">Current Patient</label>
+            <select id="patient_status">
+              <option value="No">No</option>
+              <option value="Yes">Yes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="medication">On Medication</label>
+            <select id="medication">
+              <option value="No">No</option>
+              <option value="Yes">Yes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="family_history">Family History</label>
+            <select id="family_history">
+              <option value="No">No</option>
+              <option value="Yes">Yes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="time_diagnosis">Time Since Diagnosis</label>
+            <select id="time_diagnosis">
+              <option value="< 1 year">Less than 1 year</option>
+              <option value="1-3 years">1–3 years</option>
+              <option value="3-5 years">3–5 years</option>
+              <option value="> 5 years">More than 5 years</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Symptoms -->
+        <div class="section-divider">Clinical Symptoms</div>
+        <div class="form-group">
+          <label for="symptom_severity">Symptom Severity</label>
+          <div class="toggle-row" id="severity-toggle">
+            <button type="button" class="toggle-btn active" data-val="None">None</button>
+            <button type="button" class="toggle-btn" data-val="Mild">Mild</button>
+            <button type="button" class="toggle-btn" data-val="Moderate">Moderate</button>
+            <button type="button" class="toggle-btn" data-val="Severe">Severe</button>
+          </div>
+          <input type="hidden" id="symptom_severity" value="None">
+        </div>
+
+        <div class="checkbox-grid">
+          <label class="check-item">
+            <input type="checkbox" id="shortness_breath">
+            <span class="checkmark"></span><span>Shortness of Breath</span>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="visual_changes">
+            <span class="checkmark"></span><span>Visual Changes</span>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="nosebleeds">
+            <span class="checkmark"></span><span>Nosebleeds</span>
+          </label>
+        </div>
+
+        <!-- Lifestyle -->
+        <div class="section-divider">Lifestyle</div>
+        <div class="form-group">
+          <label>Controlled Diet Adherence</label>
+          <div class="toggle-row" id="diet-toggle">
+            <button type="button" class="toggle-btn active" data-val="Yes">Yes — Following Diet</button>
+            <button type="button" class="toggle-btn" data-val="No">No — Not Following</button>
+          </div>
+          <input type="hidden" id="controlled_diet" value="Yes">
+        </div>
+
+        <button type="submit" class="predict-btn" id="predict-btn">
+          <span class="btn-text">Analyze Blood Pressure</span>
+          <span class="btn-icon">→</span>
+          <div class="btn-pulse"></div>
+        </button>
+
+      </form>
+    </div>
+
+    <!-- ── RESULTS ── -->
+    <div class="panel result-panel" id="result-panel">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 80 80" fill="none">
+            <circle cx="40" cy="40" r="36" stroke="#2a2a3e" stroke-width="2"/>
+            <path d="M20 40 Q28 24 36 40 Q40 48 44 40 Q52 24 60 40"
+                  stroke="#3a3a5c" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <p>Enter patient data and click<br><strong>Analyze Blood Pressure</strong></p>
+      </div>
+
+      <div class="results-content" id="results-content" style="display:none">
+
+        <div class="stage-display">
+          <div class="stage-badge" id="stage-badge">
+            <span class="stage-num" id="stage-num">0</span>
+          </div>
+          <div class="stage-info">
+            <div class="stage-label" id="stage-label">Normal</div>
+            <div class="stage-summary" id="stage-summary"></div>
+          </div>
+        </div>
+
+        <!-- BP display -->
+        <div class="bp-result-row">
+          <div class="bp-result-card">
+            <div class="bp-result-val" id="res-systolic">—</div>
+            <div class="bp-result-name">Systolic</div>
+          </div>
+          <div class="bp-sep">/</div>
+          <div class="bp-result-card">
+            <div class="bp-result-val" id="res-diastolic">—</div>
+            <div class="bp-result-name">Diastolic</div>
+          </div>
+        </div>
+
+        <!-- Risk meter -->
+        <div class="risk-section">
+          <div class="risk-header">
+            <span class="risk-label">Risk Level</span>
+            <span class="risk-score" id="risk-score">—</span>
+          </div>
+          <div class="meter-track">
+            <div class="meter-fill" id="meter-fill"></div>
+            <div class="meter-cursor" id="meter-cursor"></div>
+          </div>
+          <div class="meter-labels">
+            <span>Normal</span><span>Stage 1</span><span>Stage 2</span><span>Crisis</span>
+          </div>
+        </div>
+
+        <!-- Probability breakdown (if model loaded) -->
+        <div id="proba-section" style="display:none">
+          <div class="panel-label" style="margin-bottom:0.6rem">Model Probability Breakdown</div>
+          <div id="proba-bars"></div>
+        </div>
+
+        <!-- Confidence -->
+        <div class="confidence-row" id="confidence-row" style="display:none">
+          <span class="conf-label">Model Confidence</span>
+          <span class="conf-val" id="conf-val">—</span>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="recs-section">
+          <div class="panel-label" style="margin-bottom:0.6rem">Personalized Recommendations</div>
+          <ul class="recs-list" id="recs-list"></ul>
+        </div>
+
+        <div class="disclaimer">
+          ⚕️ This tool is for decision-support only. It does not constitute a medical diagnosis. Always consult a qualified healthcare professional.
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Reference Table -->
+<section class="reference-section">
+  <h2 class="section-title">ACC/AHA Classification Reference</h2>
+  <div class="ref-table-wrap">
+    <table class="ref-table">
+      <thead>
+        <tr><th>Stage</th><th>Systolic</th><th>Diastolic</th><th>Recommended Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="dot-s s0-dot"></span>Normal</td><td>&lt; 120 mmHg</td><td>&lt; 80 mmHg</td><td>Maintain healthy lifestyle</td></tr>
+        <tr><td><span class="dot-s s1-dot"></span>Stage 1</td><td>130–139 mmHg</td><td>80–89 mmHg</td><td>Lifestyle changes + possible meds</td></tr>
+        <tr><td><span class="dot-s s2-dot"></span>Stage 2</td><td>≥ 140 mmHg</td><td>≥ 90 mmHg</td><td>Medication required</td></tr>
+        <tr><td><span class="dot-s s4-dot"></span>Crisis</td><td>&gt; 180 mmHg</td><td>&gt; 120 mmHg</td><td>Emergency care immediately</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <span>PULSE · Hypertension Analysis System</span>
+  <span>Decision-support only · Not a substitute for medical advice</span>
+</footer>
+
+<script>
+  // Toggle buttons setup
+  function setupToggle(containerId, hiddenId) {
+    document.querySelectorAll(`#${containerId} .toggle-btn`).forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll(`#${containerId} .toggle-btn`).forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(hiddenId).value = btn.dataset.val;
+      });
+    });
+  }
+  setupToggle('severity-toggle', 'symptom_severity');
+  setupToggle('diet-toggle', 'controlled_diet');
+
+  // Form submit
+  document.getElementById('bp-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('predict-btn');
+    btn.classList.add('loading');
+    btn.querySelector('.btn-text').textContent = 'Analyzing…';
+
+    const payload = {
+      systolic:          document.getElementById('systolic').value,
+      diastolic:         document.getElementById('diastolic').value,
+      gender:            document.getElementById('gender').value,
+      age_group:         document.getElementById('age_group').value,
+      family_history:    document.getElementById('family_history').value,
+      patient_status:    document.getElementById('patient_status').value,
+      medication:        document.getElementById('medication').value,
+      time_diagnosis:    document.getElementById('time_diagnosis').value,
+      symptom_severity:  document.getElementById('symptom_severity').value,
+      shortness_breath:  document.getElementById('shortness_breath').checked ? 'Yes' : 'No',
+      visual_changes:    document.getElementById('visual_changes').checked ? 'Yes' : 'No',
+      nosebleeds:        document.getElementById('nosebleeds').checked ? 'Yes' : 'No',
+      controlled_diet:   document.getElementById('controlled_diet').value,
+    };
+
+    try {
+      const res = await fetch('/predict', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) renderResults(data);
+      else alert('Error: ' + data.error);
+    } catch (err) {
+      alert('Connection error. Make sure the Flask server is running.');
+    } finally {
+      btn.classList.remove('loading');
+      btn.querySelector('.btn-text').textContent = 'Analyze Blood Pressure';
+    }
+  });
+
+  function renderResults(d) {
+    document.getElementById('empty-state').style.display = 'none';
+    const content = document.getElementById('results-content');
+    content.style.display = 'block';
+    content.classList.add('fade-in');
+
+    const color = d.color;
+
+    // Stage badge
+    const badge = document.getElementById('stage-badge');
+    badge.style.background = color + '22';
+    badge.style.borderColor = color;
+    badge.style.color = color;
+    document.getElementById('stage-num').textContent = d.stage;
+    document.getElementById('stage-label').textContent = d.label;
+    document.getElementById('stage-label').style.color = color;
+    document.getElementById('stage-summary').textContent = d.summary;
+
+    // BP
+    document.getElementById('res-systolic').textContent = d.systolic;
+    document.getElementById('res-diastolic').textContent = d.diastolic;
+
+    // Risk meter
+    const pct = (d.stage / 3) * 100;
+    document.getElementById('risk-score').textContent = d.risk_score + '%';
+    document.getElementById('risk-score').style.color = color;
+    document.getElementById('meter-fill').style.width = Math.max(pct, 5) + '%';
+    document.getElementById('meter-fill').style.background =
+      `linear-gradient(90deg, #4CAF50, ${color})`;
+    document.getElementById('meter-cursor').style.left = Math.max(pct - 1, 0) + '%';
+    document.getElementById('meter-cursor').style.borderColor = color;
+
+    // Confidence
+    if (d.confidence !== null && d.confidence !== undefined) {
+      document.getElementById('confidence-row').style.display = 'flex';
+      document.getElementById('conf-val').textContent = d.confidence + '%';
+    }
+
+    // Probability bars
+    if (d.probabilities) {
+      document.getElementById('proba-section').style.display = 'block';
+      const barsEl = document.getElementById('proba-bars');
+      barsEl.innerHTML = '';
+      const stageColors = ['#4CAF50','#FFB347','#FF6B35','#FF2D2D'];
+      Object.entries(d.probabilities).forEach(([lbl, pct], i) => {
+        barsEl.innerHTML += `
+          <div class="proba-row">
+            <span class="proba-lbl">${lbl}</span>
+            <div class="proba-track">
+              <div class="proba-fill" style="width:${pct}%;background:${stageColors[i]}"></div>
+            </div>
+            <span class="proba-pct">${pct}%</span>
+          </div>`;
+      });
+    }
+
+    // Recommendations
+    const list = document.getElementById('recs-list');
+    list.innerHTML = '';
+    d.recommendations.forEach(r => {
+      const li = document.createElement('li');
+      li.className = 'rec-item priority-' + r.priority;
+      li.innerHTML = `<span class="rec-icon">${r.icon}</span><span>${r.text}</span>`;
+      list.appendChild(li);
+    });
+
+    if (window.innerWidth < 900)
+      document.getElementById('result-panel').scrollIntoView({behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
