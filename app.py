@@ -38,9 +38,18 @@ class HypertensionModel:
                                  for i,p in enumerate(proba)}}
     def predict(self,X): return self.model.predict(self.scaler.transform(X))
     def predict_proba(self,X): return self.model.predict_proba(self.scaler.transform(X))
+import sys
+sys.modules['__main__'].HypertensionModel = HypertensionModel
 
 MODEL_PATH = os.path.join(os.path.dirname(__file__), 'logreg_model.pkl')
 model = None
+
+try:
+    with open(MODEL_PATH, 'rb') as f:
+        model = pickle.load(f)
+    print("✅ Model loaded. Features:", getattr(model, 'features', 'N/A'))
+except FileNotFoundError:
+    print("⚠️  logreg_model.pkl not found. Falling back to rule-based mode.")
 
 try:
     with open(MODEL_PATH, 'rb') as f:
